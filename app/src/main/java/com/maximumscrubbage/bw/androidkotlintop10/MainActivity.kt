@@ -3,13 +3,13 @@ package com.maximumscrubbage.bw.androidkotlintop10
 import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.util.Log
 import timber.log.Timber
 import java.net.URL
 
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Timber.plant(Timber.DebugTree())
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         Timber.d("MainActivity - onCreate called")
@@ -23,9 +23,12 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private class DownloadData : AsyncTask<String, Void, String>() {
 
-            override fun onPostExecute(result: String?) {
+            override fun onPostExecute(result: String) {
                 super.onPostExecute(result)
-                Timber.d("DownloadData - onPostExecute: parameter is $result")
+//                Timber.d("DownloadData - onPostExecute: parameter is $result")
+
+                val parseApplications = ParseApplications()
+                parseApplications.parse(result)
             }
 
             override fun doInBackground(vararg url: String?): String {
