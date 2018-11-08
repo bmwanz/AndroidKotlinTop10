@@ -25,7 +25,6 @@ class MainActivity : AppCompatActivity() {
 
             override fun onPostExecute(result: String) {
                 super.onPostExecute(result)
-//                Timber.d("DownloadData - onPostExecute: parameter is $result")
 
                 val parseApplications = ParseApplications()
                 parseApplications.parse(result)
