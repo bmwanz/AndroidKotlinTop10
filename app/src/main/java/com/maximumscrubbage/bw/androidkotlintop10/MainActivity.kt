@@ -1,10 +1,15 @@
 package com.maximumscrubbage.bw.androidkotlintop10
 
+import android.content.Context
 import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.widget.ArrayAdapter
+import android.widget.ListView
+import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
 import java.net.URL
+import kotlin.properties.Delegates
 
 class MainActivity : AppCompatActivity() {
 
@@ -14,20 +19,35 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         Timber.d("MainActivity - onCreate called")
 
-        val downloadData = DownloadData()
+        val downloadData = DownloadData(this, xmlListView)
         downloadData.execute("http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=10/xml")
+
         Timber.d("MainActivity - onCreate done")
     }
 
     // Kotlin's version of static
     companion object {
-        private class DownloadData : AsyncTask<String, Void, String>() {
+        private class DownloadData(context: Context, listView: ListView) : AsyncTask<String, Void, String>() {
+
+            // leaks context
+//            var propContext : Context = context
+
+            var propContext : Context by Delegates.notNull()
+            var propListView : ListView by Delegates.notNull()
+
+            init {
+                propContext = context
+                propListView = listView
+            }
 
             override fun onPostExecute(result: String) {
                 super.onPostExecute(result)
 
                 val parseApplications = ParseApplications()
                 parseApplications.parse(result)
+
+                val arrayAdapter = ArrayAdapter<FeedEntry>(propContext, R.layout.list_item, parseApplications.applications)
+                propListView.adapter = arrayAdapter
             }
 
             override fun doInBackground(vararg url: String?): String {
