@@ -13,16 +13,24 @@ import kotlin.properties.Delegates
 
 class MainActivity : AppCompatActivity() {
 
+    // by lazy: initialize when it's first used, xmlListView not available until setContentView
+    private val downloadData by lazy { DownloadData(this, xmlListView) }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         Timber.plant(Timber.DebugTree())
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         Timber.d("MainActivity - onCreate called")
 
-        val downloadData = DownloadData(this, xmlListView)
+//        val downloadData = DownloadData(this, xmlListView)
         downloadData.execute("http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=10/xml")
 
         Timber.d("MainActivity - onCreate done")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        downloadData.cancel(true)
     }
 
     // Kotlin's version of static
