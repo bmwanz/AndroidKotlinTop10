@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
-import timber.log.Timber
 
 
 class FeedAdapter(context: Context, private val resource: Int, private val applications: List<FeedEntry>)
@@ -15,12 +14,10 @@ class FeedAdapter(context: Context, private val resource: Int, private val appli
     private val inflater = LayoutInflater.from(context)
 
     override fun getCount(): Int {
-        Timber.d("FeedAdapter - getCount() = %d", applications.size)
         return applications.size
     }
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-        Timber.d("FeedAdapter - getView()")
 
         // reuse view and giving it back to adapter, only create new view if adapter wasn't given one to reuse
         val view: View
@@ -30,7 +27,6 @@ class FeedAdapter(context: Context, private val resource: Int, private val appli
         // if given existing view, retrieving viewholder from its tag
         // tag is object casted as ViewHolder, we know it's ViewHolder because we're only ones who put it there
         if (convertView == null) {
-            Timber.d("FeedAdapter - getView called with null convertView")
             view = inflater.inflate(resource, parent, false)
             viewHolder = ViewHolder(view)
             view.tag = viewHolder

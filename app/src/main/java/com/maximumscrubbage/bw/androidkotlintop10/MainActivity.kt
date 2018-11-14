@@ -4,7 +4,8 @@ import android.content.Context
 import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.widget.ArrayAdapter
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.ListView
 import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
@@ -13,8 +14,7 @@ import kotlin.properties.Delegates
 
 class MainActivity : AppCompatActivity() {
 
-    // by lazy: initialize when it's first used, xmlListView not available until setContentView
-    private val downloadData by lazy { DownloadData(this, xmlListView) }
+    private var downloadData: DownloadData? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Timber.plant(Timber.DebugTree())
@@ -23,14 +23,47 @@ class MainActivity : AppCompatActivity() {
         Timber.d("MainActivity - onCreate called")
 
 //        val downloadData = DownloadData(this, xmlListView)
-        downloadData.execute("http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=10/xml")
+//        downloadData.execute("http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=10/xml")
+
+        downloadUrl("http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=10/xml")
 
         Timber.d("MainActivity - onCreate done")
     }
 
+    private fun downloadUrl(feedURL: String) {
+        Timber.d("MainActivity - downloadUrl starting AsyncTask")
+        downloadData = DownloadData(this, xmlListView)
+        downloadData?.execute(feedURL)
+        Timber.d("MainActivity - downloadUrl done")
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.feeds_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // we know MenuItem will not be null, it wouldn't be able to be selected if DNE
+        val feedUrl: String
+
+        when (item.itemId) {
+            R.id.mnuFree ->
+                feedUrl = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=10/xml"
+            R.id.mnuPaid ->
+                feedUrl = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/toppaidapplications/limit=10/xml"
+            R.id.mnuSongs ->
+                feedUrl = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topsongs/limit=10/xml"
+            else ->
+                return super.onOptionsItemSelected(item)
+        }
+
+        downloadUrl(feedUrl)
+        return true
+    }
+
     override fun onDestroy() {
         super.onDestroy()
-        downloadData.cancel(true)
+        downloadData?.cancel(true)
     }
 
     // Kotlin's version of static
@@ -50,7 +83,6 @@ class MainActivity : AppCompatActivity() {
 
             override fun onPostExecute(result: String) {
                 super.onPostExecute(result)
-
                 val parseApplications = ParseApplications()
                 parseApplications.parse(result)
 

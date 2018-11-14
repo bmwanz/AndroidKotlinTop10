@@ -28,7 +28,7 @@ class ParseApplications {
                 when (eventType) {
 
                     XmlPullParser.START_TAG -> {
-                        Timber.d("ParseApplications - parse: Starting tag for %s", tagName)
+//                        Timber.d("ParseApplications - parse: Starting tag for %s", tagName)
                         if (tagName == "entry") {
                             inEntry = true
                         }
@@ -37,7 +37,7 @@ class ParseApplications {
                     XmlPullParser.TEXT -> textValue = xpp.text      // data is available
 
                     XmlPullParser.END_TAG -> {
-                        Timber.d("ParseApplications - parse: Ending tag for %s", tagName)
+//                        Timber.d("ParseApplications - parse: Ending tag for %s", tagName)
 
                         if(inEntry) {
                             when (tagName) {
@@ -60,10 +60,10 @@ class ParseApplications {
                 eventType = xpp.next()
             }
 
-            for (app in applications) {
-                Timber.d("**********")
-                Timber.d("ParseApplications - %s", app.toString())
-            }
+//            for (app in applications) {
+//                Timber.d("**********")
+//                Timber.d("ParseApplications - %s", app.toString())
+//            }
 
         } catch (e: Exception) {
             e.printStackTrace()
