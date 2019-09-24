@@ -3,6 +3,7 @@ package com.maximumscrubbage.bw.androidkotlintop10
 import android.content.Context
 import android.os.AsyncTask
 import android.os.Bundle
+import android.os.PersistableBundle
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
@@ -27,6 +28,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         Timber.d("MainActivity - onCreate called")
+
+        if (savedInstanceState != null) {
+            feedUrl = savedInstanceState.getString(STATE_URL)
+            feedLimit = savedInstanceState.getInt(STATE_LIMIT)
+        }
 
 //        val downloadData = DownloadData(this, xmlListView)
 //        downloadData.execute("http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=10/xml")
@@ -90,6 +96,12 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         downloadData?.cancel(true)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(STATE_URL, feedUrl)
+        outState.putInt(STATE_LIMIT, feedLimit)
     }
 
     // Kotlin's version of static
