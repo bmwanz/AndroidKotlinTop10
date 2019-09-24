@@ -15,6 +15,12 @@ import kotlin.properties.Delegates
 class MainActivity : AppCompatActivity() {
 
     private var downloadData: DownloadData? = null
+    private var feedUrl: String = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=%d/xml"
+    private var feedLimit = 10;
+
+    private var feedCachedUrl = "INVALIDATED"
+    private val STATE_URL = "feedUrl"
+    private val STATE_LIMIT = "feedLimit"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Timber.plant(Timber.DebugTree())
@@ -25,39 +31,59 @@ class MainActivity : AppCompatActivity() {
 //        val downloadData = DownloadData(this, xmlListView)
 //        downloadData.execute("http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=10/xml")
 
-        downloadUrl("http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=10/xml")
+        downloadUrl(feedUrl.format(feedLimit))
 
         Timber.d("MainActivity - onCreate done")
     }
 
     private fun downloadUrl(feedURL: String) {
-        Timber.d("MainActivity - downloadUrl starting AsyncTask")
-        downloadData = DownloadData(this, xmlListView)
-        downloadData?.execute(feedURL)
-        Timber.d("MainActivity - downloadUrl done")
+        if (feedURL != feedCachedUrl) {
+            Timber.d("MainActivity - downloadUrl starting AsyncTask")
+            downloadData = DownloadData(this, xmlListView)
+            downloadData?.execute(feedURL)
+            feedCachedUrl = feedURL
+            Timber.d("MainActivity - downloadUrl done")
+        } else {
+            Timber.d("downloadURL - URL not changed")
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.feeds_menu, menu)
+        if (feedLimit == 10) {
+            menu?.findItem(R.id.mnu10)?.isChecked = true
+        } else {
+            menu?.findItem(R.id.mnu25)?.isChecked = true
+        }
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // we know MenuItem will not be null, it wouldn't be able to be selected if DNE
-        val feedUrl: String
+//        val feedUrl: String
 
         when (item.itemId) {
             R.id.mnuFree ->
-                feedUrl = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=10/xml"
+                feedUrl = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=%d/xml"
             R.id.mnuPaid ->
-                feedUrl = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/toppaidapplications/limit=10/xml"
+                feedUrl = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/toppaidapplications/limit=%d/xml"
             R.id.mnuSongs ->
-                feedUrl = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topsongs/limit=10/xml"
+                feedUrl = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topsongs/limit=%d/xml"
+            R.id.mnu10, R.id.mnu25 -> {
+                if (!item.isChecked) {
+                    item.isChecked = true
+                    feedLimit = 35 - feedLimit
+                    Timber.d("onOptionsItemSelected: ${item.title} setting feedLimit to $feedLimit")
+                } else {
+                    Timber.d("onOptionsSelected: ${item.title} setting feedLimit unchanged")
+                }
+            }
+            R.id.mnuRefresh -> feedCachedUrl = "INVALIDATED"
             else ->
                 return super.onOptionsItemSelected(item)
         }
 
-        downloadUrl(feedUrl)
+        downloadUrl(feedUrl.format(feedLimit))
         return true
     }
 
